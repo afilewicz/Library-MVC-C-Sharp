@@ -32,12 +32,16 @@ namespace Library.Migrations
 
                     b.Property<string>("history_of_leases")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("price")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("publisher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

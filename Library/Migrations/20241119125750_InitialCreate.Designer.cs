@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Library.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20241118161238_InitialCreate")]
+    [Migration("20241119125750_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -35,12 +35,16 @@ namespace Library.Migrations
 
                     b.Property<string>("history_of_leases")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<decimal>("price")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("publisher")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

@@ -20,11 +20,45 @@ namespace Library.Controllers
         }
 
         // GET: Books
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string bookPublisher, string searchString)
         {
-            return View(await _context.Book.ToListAsync());
+            if (_context.Book == null)
+            {
+                return Problem("Entity set 'MvcMovieContext.Movie'  is null.");
+            }
+
+            // Use LINQ to get list of genres.
+            IQueryable<string> genreQuery = from b in _context.Book
+                orderby b.publisher
+                select b.publisher;
+            var books = from b in _context.Book
+                select b;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                books = books.Where(s => s.author!.ToUpper().Contains(searchString.ToUpper()));
+            }
+
+            if (!string.IsNullOrEmpty(bookPublisher))
+            {
+                books = books.Where(x => x.publisher == bookPublisher);
+            }
+
+            var bookPublisherVM = new BookPublisherViewModel
+            {
+                Publishers = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                Books = await books.ToListAsync()
+            };
+
+            return View(bookPublisherVM);
         }
 
+        [HttpPost]
+        public string Index(string searchString, bool notUsed)
+        {
+            return "From [HttpPost]Index: filter on " + searchString;
+        }
+        
         // GET: Books/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -86,7 +120,7 @@ namespace Library.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("id,author,publisher,date_of_publication,price,history_of_leases")] Book book)
+        public async Task<IActionResult> Edit(int id, [Bind("id,title,author,publisher,date_of_publication,price,history_of_leases")] Book book)
         {
             if (id != book.id)
             {

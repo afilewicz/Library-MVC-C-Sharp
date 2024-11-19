@@ -17,11 +17,12 @@ namespace Library.Migrations
                 {
                     id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    title = table.Column<string>(type: "TEXT", nullable: false),
                     author = table.Column<string>(type: "TEXT", nullable: false),
                     publisher = table.Column<string>(type: "TEXT", nullable: false),
                     date_of_publication = table.Column<DateTime>(type: "TEXT", nullable: false),
                     price = table.Column<decimal>(type: "TEXT", nullable: false),
-                    history_of_leases = table.Column<string>(type: "TEXT", nullable: false)
+                    history_of_leases = table.Column<string>(type: "decimal(18, 2)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -1,4 +1,4 @@
-@model IEnumerable<Library.Models.Book>
+@model Library.Models.BookPublisherViewModel
 
 @{
     ViewData["Title"] = "Index";
@@ -9,32 +9,50 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<form asp-controller="Books" asp-action="Index" method="get">
+    <p>
+        <select asp-for="BookPublisher" asp-items="Model.Publishers">
+            <option value="">All</option>
+        </select>
+        
+        <label>Title: <input type="text" name="SearchString"/></label>
+        <input type="submit" value="Filter"/>
+    </p>
+</form>
+
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.author)
+                @Html.DisplayNameFor(model => model.Books![0].author)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.publisher)
+                @Html.DisplayNameFor(model => model.Books![0].title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.date_of_publication)
+                @Html.DisplayNameFor(model => model.Books![0].publisher)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.price)
+                @Html.DisplayNameFor(model => model.Books![0].date_of_publication)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.history_of_leases)
+                @Html.DisplayNameFor(model => model.Books![0].price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Books![0].history_of_leases)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
+@foreach (var item in Model.Books!) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.author)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.title)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.publisher)

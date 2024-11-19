@@ -23,6 +23,7 @@ public static class SeedData
                 new Book
                 {
                     author = "Adam Mickiewicz",
+                    title = "Pan Tadeusz",
                     publisher = "Czytelnik",
                     date_of_publication = DateTime.Parse("2000-1-15"),
                     price = 30.00M,
@@ -31,6 +32,7 @@ public static class SeedData
                 new Book
                 {
                     author = "Henryk Sienkiewicz",
+                    title = "Quo Vadis",
                     publisher = "Greg",
                     date_of_publication = DateTime.Parse("2005-12-14"),
                     price = 25.00M,
@@ -39,6 +41,7 @@ public static class SeedData
                 new Book
                 {
                     author = "Juliusz Słowacki",
+                    title = "Balladyna",
                     publisher = "GWO",
                     date_of_publication = DateTime.Parse("2005-3-19"),
                     price = 25.00M,
@@ -47,6 +50,7 @@ public static class SeedData
                 new Book
                 {
                     author = "Władysław Reymont",
+                    title = "Chłopi",
                     publisher = "Czytelnik",
                     date_of_publication = DateTime.Parse("2001-10-10"),
                     price = 25.00M,
