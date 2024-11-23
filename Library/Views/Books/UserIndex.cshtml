@@ -1,0 +1,46 @@
+@model Library.Models.BookPublisherViewModel
+
+@{
+    ViewData["Title"] = "User Index";
+}
+
+<h1>User Index</h1>
+
+<form asp-controller="Books" asp-action="UserIndex" method="get">
+    <p>
+        <select asp-for="BookPublisher" asp-items="Model.Publishers">
+            <option value="">All</option>
+        </select>
+
+        <label>Title: <input type="text" name="SearchString"/></label>
+        <input type="submit" value="Filter"/>
+    </p>
+</form>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>@Html.DisplayNameFor(model => model.Books![0].author)</th>
+        <th>@Html.DisplayNameFor(model => model.Books![0].title)</th>
+        <th>@Html.DisplayNameFor(model => model.Books![0].publisher)</th>
+        <th>@Html.DisplayNameFor(model => model.Books![0].date_of_publication)</th>
+        <th>@Html.DisplayNameFor(model => model.Books![0].price)</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model.Books!)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.author)</td>
+            <td>@Html.DisplayFor(modelItem => item.title)</td>
+            <td>@Html.DisplayFor(modelItem => item.publisher)</td>
+            <td>@Html.DisplayFor(modelItem => item.date_of_publication)</td>
+            <td>@Html.DisplayFor(modelItem => item.price)</td>
+            <td>
+                <a asp-action="Borrow" asp-route-id="@item.id">Borrow</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

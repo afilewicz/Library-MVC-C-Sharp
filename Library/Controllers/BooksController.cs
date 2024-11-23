@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Library.Controllers
 {
-    [Authorize (Roles = "SuperAdmin")]
+    [Authorize]
     public class BooksController : Controller
     {
         private readonly LibraryContext _context;
@@ -26,13 +26,72 @@ namespace Library.Controllers
         {
             if (_context.Book == null)
             {
-                return Problem("Entity set 'MvcMovieContext.Movie'  is null.");
+                return Problem("Entity set 'LibraryContext.Library'  is null.");
             }
 
             // Use LINQ to get list of genres.
             IQueryable<string> genreQuery = from b in _context.Book
                 orderby b.publisher
                 select b.publisher;
+            
+            var books = from b in _context.Book
+                select b;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                books = books.Where(s => s.author!.ToUpper().Contains(searchString.ToUpper()));
+            }
+
+            if (!string.IsNullOrEmpty(bookPublisher))
+            {
+                books = books.Where(x => x.publisher == bookPublisher);
+            }
+            // var bookList = await books.ToListAsync();
+            //
+            // var loanDates = _context.Loan
+            //     .Where(loan => bookList.Select(book => book.id).Contains(loan.BookId))
+            //     .GroupBy(loan => loan.BookId)
+            //     .ToDictionary(
+            //         group => group.Key,
+            //         group => group.Select(loan => loan.LoanDate).ToList()
+            //     );
+            // foreach (var book in bookList)
+            // {
+            //     if (!loanDates.ContainsKey(book.id))
+            //     {
+            //         loanDates[book.id] = new List<DateTime>();
+            //     }
+            // }
+            
+            var bookPublisherVM = new BookPublisherViewModel
+            {
+                Publishers = new SelectList(await genreQuery.Distinct().ToListAsync()),
+                Books = await books.ToListAsync()
+            };
+            
+            // ViewData["LoanDates"] = loanDates;
+
+            if (User.IsInRole("SuperAdmin"))
+            {
+                return View("Index", bookPublisherVM);
+            }
+            else
+            {
+                return View("UserIndex", bookPublisherVM);
+            }
+        }
+
+        public async Task<IActionResult> UserIndex(string bookPublisher, string searchString)
+        {
+            if (_context.Book == null)
+            {
+                return Problem("Entity set 'LibraryContext.Library' is null.");
+            }
+
+            IQueryable<string> genreQuery = from b in _context.Book
+                orderby b.publisher
+                select b.publisher;
+
             var books = from b in _context.Book
                 select b;
 
@@ -55,6 +114,44 @@ namespace Library.Controllers
             return View(bookPublisherVM);
         }
 
+        public async Task<IActionResult> Borrow(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var book = await _context.Book.FindAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            Guid userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
+            
+            var loan = new Loan
+            {
+                BookId = book.id,
+                UserId = userId,
+                LoanDate = DateTime.Now,
+                ReturnDate = DateTime.Now.AddDays(14), // Example return date
+                Returned = false
+            };
+            
+            await _context.SaveChangesAsync();
+
+            _context.Loan.Add(loan);
+            await _context.SaveChangesAsync();
+
+            // Update the book's loan status
+            book.is_loaned = true;
+            _context.Book.Update(book);
+            await _context.SaveChangesAsync();
+            
+
+            return RedirectToAction(nameof(UserIndex));
+        }
+        
         [HttpPost]
         public string Index(string searchString, bool notUsed)
         {

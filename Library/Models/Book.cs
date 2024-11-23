@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Library.Models;
 
@@ -14,7 +15,9 @@ public class Book
     [DataType(DataType.Date)]
     public DateTime date_of_publication {get; set; }
     public decimal price {get; set; }
-    [Column(TypeName = "decimal(18, 2)")]
+    
     [Display(Name = "History of leases")]
-    public string history_of_leases {get; set; }
+    [ForeignKey("Loan")]
+    public int? history_of_leases { get; set; }
+    public bool is_loaned { get; set; } = false;
 }

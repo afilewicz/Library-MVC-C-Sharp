@@ -27,7 +27,6 @@ public static class SeedData
                     publisher = "Czytelnik",
                     date_of_publication = DateTime.Parse("2000-1-15"),
                     price = 30.00M,
-                    history_of_leases = string.Empty
                 },
                 new Book
                 {
@@ -36,7 +35,6 @@ public static class SeedData
                     publisher = "Greg",
                     date_of_publication = DateTime.Parse("2005-12-14"),
                     price = 25.00M,
-                    history_of_leases = string.Empty
                 },
                 new Book
                 {
@@ -45,7 +43,6 @@ public static class SeedData
                     publisher = "GWO",
                     date_of_publication = DateTime.Parse("2005-3-19"),
                     price = 25.00M,
-                    history_of_leases = string.Empty
                 },
                 new Book
                 {
@@ -54,7 +51,6 @@ public static class SeedData
                     publisher = "Czytelnik",
                     date_of_publication = DateTime.Parse("2001-10-10"),
                     price = 25.00M,
-                    history_of_leases = string.Empty
                 }
             );
             context.SaveChanges();

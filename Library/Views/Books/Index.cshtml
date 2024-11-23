@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Index";
+    // var loanDates = ViewData["LoanDates"] as Dictionary<int, List<DateTime>>;
 }
 
 <h1>Index</h1>
@@ -39,9 +40,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Books![0].price)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Books![0].history_of_leases)
-            </th>
+            @* <th> *@
+            @*     Loan Dates *@
+            @* </th> *@
             <th></th>
         </tr>
     </thead>
@@ -63,9 +64,19 @@
             <td>
                 @Html.DisplayFor(modelItem => item.price)
             </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.history_of_leases)
-            </td>
+            @* <td> *@
+            @*     @if (loanDates != null && loanDates.ContainsKey(item.id)) *@
+            @*     { *@
+            @*         foreach (var date in loanDates[item.id]) *@
+            @*         { *@
+            @*             <div>@date.ToString("d")</div> *@
+            @*         } *@
+            @*     } *@
+            @*     else *@
+            @*     { *@
+            @*         <div>No loans</div> *@
+            @*     } *@
+            @* </td> *@
             <td>
                 <a asp-action="Edit" asp-route-id="@item.id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.id">Details</a> |
