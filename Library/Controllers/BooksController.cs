@@ -24,6 +24,7 @@ namespace Library.Controllers
         // GET: Books
         public async Task<IActionResult> Index(string bookPublisher, string searchString)
         {
+            await ReleaseReservedBooks();
             if (_context.Book == null)
             {
                 return Problem("Entity set 'LibraryContext.Library'  is null.");
@@ -36,12 +37,12 @@ namespace Library.Controllers
             
             var books = from b in _context.Book
                 select b;
-
+            
             if (!string.IsNullOrEmpty(searchString))
             {
-                books = books.Where(s => s.author!.ToUpper().Contains(searchString.ToUpper()));
+                books = books.Where(s => s.author!.ToUpper().Contains(searchString.ToUpper()) ||
+                                         s.title!.ToUpper().Contains(searchString.ToUpper()));
             }
-
             if (!string.IsNullOrEmpty(bookPublisher))
             {
                 books = books.Where(x => x.publisher == bookPublisher);
@@ -67,6 +68,7 @@ namespace Library.Controllers
 
         public async Task<IActionResult> UserIndex(string bookPublisher, string searchString)
         {
+            await ReleaseReservedBooks();
             if (_context.Book == null)
             {
                 return Problem("Entity set 'LibraryContext.Library' is null.");
@@ -118,7 +120,8 @@ namespace Library.Controllers
                 BookId = book.id,
                 UserId = userId,
                 LoanDate = null,
-                ReturnDate = DateTime.Now.AddDays(2), // Example return date
+                // ReturnDate = DateTime.Now.AddSeconds(4),
+                ReturnDate = DateTime.Today.AddDays(1).AddSeconds(-1),
                 Status = LoanStatus.Reserved
             };
             
@@ -136,6 +139,30 @@ namespace Library.Controllers
             return RedirectToAction(nameof(UserIndex));
         }
         
+        public async Task<IActionResult> ReleaseReservedBooks()
+        {
+            var expiredLoans = await _context.Loan
+                .Where(loan => loan.Status == LoanStatus.Reserved && loan.ReturnDate < DateTime.Now)
+                .ToListAsync();
+
+            foreach (var loan in expiredLoans)
+            {
+                var book = await _context.Book.FindAsync(loan.BookId);
+                if (book != null)
+                {
+                    book.is_loaned = false;
+                    _context.Book.Update(book);
+                }
+                
+
+                _context.Loan.Remove(loan);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Expired reservations have been released and loans deleted.");
+        }
+     
         [HttpPost]
         public string Index(string searchString, bool notUsed)
         {

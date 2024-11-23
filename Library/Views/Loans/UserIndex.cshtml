@@ -11,8 +11,8 @@
     <tr>
         <th>Book Title</th>
         <th>User Name</th>
-        <th>Loan Date</th>
-        <th>Return Date</th>
+        <th>Begin Date</th>
+        <th>End Date</th>
         <th>Status</th>
         <th></th>
     </tr>
@@ -24,9 +24,19 @@
             <tr>
                 <td>@item.BookTitle</td>
                 <td>@item.UserName</td>
-                <td>@item.LoanDate.ToString()</td>
+                <td>@item.LoanDate?.ToString("d")</td>
                 <td>@item.ReturnDate.ToString("d")</td>
                 <td>@item.Status</td>
+                <td>
+                    @if (item.Status == Library.Models.LoanStatus.Reserved)
+                    {
+                        <form asp-action="Delete" method="post" class="form-inline">
+                            <input type="hidden" name="id" value="@item.Id"/>
+                            <button type="submit" class="btn btn-danger">Cancel</button>
+                        </form>
+                    }
+                </td>
+
             </tr>
         }
     }

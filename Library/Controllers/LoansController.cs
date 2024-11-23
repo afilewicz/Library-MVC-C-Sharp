@@ -7,11 +7,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Library.Data;
 using Library.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
 
 namespace Library.Controllers
 {
+    [Authorize]
     public class LoansController : Controller
     {
         private readonly LibraryContext _context;
@@ -160,6 +162,15 @@ namespace Library.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var loan = await _context.Loan.FindAsync(id);
+            var book = await _context.Book
+                .FirstOrDefaultAsync(b => b.id == loan.BookId);
+
+            if (book != null)
+            {
+                book.is_loaned = false;
+                _context.Book.Update(book);
+            }
+
             if (loan != null)
             {
                 _context.Loan.Remove(loan);
@@ -191,6 +202,20 @@ namespace Library.Controllers
             loan.Status = newStatus;
             
             book.is_loaned =(newStatus != LoanStatus.Free);
+            if (newStatus == LoanStatus.Free)
+            {
+                loan.ReturnDate = DateTime.Now;
+            }
+            else if (newStatus == LoanStatus.Loaned)
+            {
+                loan.LoanDate = DateTime.Now.AddDays(0);
+                loan.ReturnDate = DateTime.Now.AddMonths(1);
+            }
+            else if (newStatus == LoanStatus.Reserved)
+            {
+                loan.LoanDate = null;
+                loan.ReturnDate = DateTime.Now.AddMonths(1);
+            }
 
             _context.Update(loan);
             _context.Update(book);

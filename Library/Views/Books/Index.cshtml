@@ -11,15 +11,20 @@
     <a asp-action="Create">Create New</a>
 </p>
 
-<form asp-controller="Books" asp-action="Index" method="get">
-    <p>
-        <select asp-for="BookPublisher" asp-items="Model.Publishers">
+<form asp-controller="Books" asp-action="Index" method="get" class="row g-2 align-items-center">
+    <div class="col-md-2">
+        <label for="bookPublisher" class="form-label visually-hidden">Publisher</label>
+        <select id="bookPublisher" asp-for="BookPublisher" asp-items="Model.Publishers" class="form-select">
             <option value="">All</option>
         </select>
-        
-        <label>Title: <input type="text" name="SearchString"/></label>
-        <input type="submit" value="Filter"/>
-    </p>
+    </div>
+    <div class="col-md-8">
+        <label for="searchString" class="form-label visually-hidden">Title</label>
+        <input type="text" id="searchString" name="SearchString" class="form-control" placeholder="Enter book title" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </div>
 </form>
 
 <table class="table">

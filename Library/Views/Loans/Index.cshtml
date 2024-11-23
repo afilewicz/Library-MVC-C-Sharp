@@ -11,8 +11,8 @@
         <tr>
             <th>Book Title</th>
             <th>User Name</th>
-            <th>Loan Date</th>
-            <th>Return Date</th>
+            <th>Begin Date</th>
+            <th>End Date</th>
             <th>Returned</th>
             <th></th>
         </tr>
@@ -24,7 +24,7 @@
             <td>@item.UserName</td>
             @if (item.LoanDate != null)
             {
-                <td>@item.LoanDate.ToString()</td>
+                <td>@item.LoanDate?.ToString("d")</td>
             }
             else
             {
