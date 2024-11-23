@@ -33,10 +33,16 @@ namespace Library.Controllers
                 UserName = _context.Users.FirstOrDefault(u => u.Id == loan.UserId.ToString())?.UserName,
                 LoanDate = loan.LoanDate,
                 ReturnDate = loan.ReturnDate,
-                Returned = loan.Returned
+                Status = loan.Status
             }).ToList();
-
-            return View(loanViewModels);
+            if (User.IsInRole("SuperAdmin"))
+            {
+                return View("Index", loanViewModels);
+            }
+            else
+            {
+                return View("UserIndex", loanViewModels);
+            }
         }
 
         // GET: Loans/Details/5
@@ -100,7 +106,7 @@ namespace Library.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BookId,UserId,LoanDate,ReturnDate,Returned")] Loan loan)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BookId,UserId,LoanDate,ReturnDate,Status")] Loan loan)
         {
             if (id != loan.Id)
             {
@@ -166,6 +172,31 @@ namespace Library.Controllers
         private bool LoanExists(int id)
         {
             return _context.Loan.Any(e => e.Id == id);
+        }
+        
+        public async Task<IActionResult> ChangeLoanStatus(int loanId, LoanStatus newStatus)
+        {
+            var loan = await _context.Loan.FindAsync(loanId);
+            if (loan == null)
+            {
+                return NotFound();
+            }
+            var book = await _context.Book.FindAsync(loan.BookId);
+
+            if (book == null)
+            {
+                return NotFound();
+            }
+            
+            loan.Status = newStatus;
+            
+            book.is_loaned =(newStatus != LoanStatus.Free);
+
+            _context.Update(loan);
+            _context.Update(book);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

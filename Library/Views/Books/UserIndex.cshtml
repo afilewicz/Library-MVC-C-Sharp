@@ -4,7 +4,7 @@
     ViewData["Title"] = "User Index";
 }
 
-<h1>User Index</h1>
+<h1>Books</h1>
 
 <form asp-controller="Books" asp-action="UserIndex" method="get">
     <p>
@@ -38,7 +38,14 @@
             <td>@Html.DisplayFor(modelItem => item.date_of_publication)</td>
             <td>@Html.DisplayFor(modelItem => item.price)</td>
             <td>
-                <a asp-action="Borrow" asp-route-id="@item.id">Borrow</a>
+                @if (item.is_loaned)
+                {
+                    <button class="btn btn-secondary" disabled>Borrow</button>
+                }
+                else
+                {
+                    <a class="btn btn-primary" asp-action="Borrow" asp-route-id="@item.id">Borrow</a>
+                }
             </td>
         </tr>
     }

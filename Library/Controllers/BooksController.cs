@@ -46,22 +46,6 @@ namespace Library.Controllers
             {
                 books = books.Where(x => x.publisher == bookPublisher);
             }
-            // var bookList = await books.ToListAsync();
-            //
-            // var loanDates = _context.Loan
-            //     .Where(loan => bookList.Select(book => book.id).Contains(loan.BookId))
-            //     .GroupBy(loan => loan.BookId)
-            //     .ToDictionary(
-            //         group => group.Key,
-            //         group => group.Select(loan => loan.LoanDate).ToList()
-            //     );
-            // foreach (var book in bookList)
-            // {
-            //     if (!loanDates.ContainsKey(book.id))
-            //     {
-            //         loanDates[book.id] = new List<DateTime>();
-            //     }
-            // }
             
             var bookPublisherVM = new BookPublisherViewModel
             {
@@ -122,7 +106,7 @@ namespace Library.Controllers
             }
 
             var book = await _context.Book.FindAsync(id);
-            if (book == null)
+            if (book == null || book.is_loaned)
             {
                 return NotFound();
             }
@@ -133,9 +117,9 @@ namespace Library.Controllers
             {
                 BookId = book.id,
                 UserId = userId,
-                LoanDate = DateTime.Now,
-                ReturnDate = DateTime.Now.AddDays(14), // Example return date
-                Returned = false
+                LoanDate = null,
+                ReturnDate = DateTime.Now.AddDays(2), // Example return date
+                Status = LoanStatus.Reserved
             };
             
             await _context.SaveChangesAsync();

@@ -4,11 +4,8 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Loans</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -25,15 +22,44 @@
         <tr>
             <td>@item.BookTitle</td>
             <td>@item.UserName</td>
-            <td>@item.LoanDate.ToString("d")</td>
+            @if (item.LoanDate != null)
+            {
+                <td>@item.LoanDate.ToString()</td>
+            }
+            else
+            {
+                <td>Reserved till</td>
+            }
             <td>@item.ReturnDate.ToString("d")</td>
-            <td>@item.Returned</td>
+            <td>@item.Status</td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @if (item.Status != Library.Models.LoanStatus.Free)
+                {
+                    <form asp-action="ChangeLoanStatus" method="post" class="form-inline">
+                        <input type="hidden" name="loanId" value="@item.Id"/>
+                        @* <label for="newStatus">New Status</label> *@
+                        <select name="newStatus" class="form-control">
+                            @if (item.Status == Library.Models.LoanStatus.Reserved)
+                            {
+                                <option value="2">Loaned</option>
+                                <option value="0">Free</option>
+                            }
+                            else if (item.Status == Library.Models.LoanStatus.Loaned)
+                            {
+                                <option value="0">Free</option>
+                            }
+                        </select>
+                        @* </div> *@
+                        <button type="submit" class="btn btn-primary">Change Status</button>
+                    </form>
+                }
             </td>
-        </tr>
+                @* <td> *@
+                @*     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> | *@
+                @*     <a asp-action="Details" asp-route-id="@item.Id">Details</a> | *@
+                @*     <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> *@
+                @* </td> *@
+    </tr>
 }
     </tbody>
 </table>
