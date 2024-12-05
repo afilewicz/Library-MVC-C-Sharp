@@ -100,7 +100,9 @@ namespace Library.Controllers
             return View(bookPublisherVM);
         }
 
-        public async Task<IActionResult> Borrow(int? id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Borrow(int? id,  Guid concurrencyToken)
         {
             if (id == null)
             {
@@ -108,9 +110,16 @@ namespace Library.Controllers
             }
 
             var book = await _context.Book.FindAsync(id);
-            if (book == null || book.is_loaned)
+            // if (book == null || book.is_loaned)
+            // {
+            //     return NotFound();
+            // }
+            
+            if (book.ConcurrencyToken != concurrencyToken)
             {
-                return NotFound();
+                TempData["ConcurrencyError"] = "Ktoś wypożyczył już tę książkę.";
+                TempData["BorrowFailed"] = book.id;
+                return RedirectToAction(nameof(Index));
             }
 
             Guid userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
@@ -132,10 +141,10 @@ namespace Library.Controllers
 
             // Update the book's loan status
             book.is_loaned = true;
+            book.ConcurrencyToken = Guid.NewGuid();
             _context.Book.Update(book);
             await _context.SaveChangesAsync();
-            
-
+            TempData["BorrowFailed"] = false;
             return RedirectToAction(nameof(UserIndex));
         }
         
@@ -153,13 +162,10 @@ namespace Library.Controllers
                     book.is_loaned = false;
                     _context.Book.Update(book);
                 }
-                
-
                 _context.Loan.Remove(loan);
             }
 
             await _context.SaveChangesAsync();
-
             return Ok("Expired reservations have been released and loans deleted.");
         }
      

@@ -4,6 +4,31 @@
     ViewData["Title"] = "User Index";
 }
 
+@if (TempData["ConcurrencyError"] != null)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorModalLabel">Uwaga</h5>
+                </div>
+                <div class="modal-body">
+                    <p>@TempData["ConcurrencyError"]</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function closeModal() {
+            window.location.href = window.location.href;
+        }
+    </script>
+}
+
 <h1>Books</h1>
 
 <form asp-controller="Books" asp-action="Index" method="get" class="row g-2 align-items-center">
@@ -44,13 +69,17 @@
             <td>@Html.DisplayFor(modelItem => item.date_of_publication)</td>
             <td>@Html.DisplayFor(modelItem => item.price)</td>
             <td>
-                @if (item.is_loaned)
+                @if (Convert.ToInt32(TempData["BorrowFailed"]) != item.id && item.is_loaned)
                 {
                     <button class="btn btn-secondary" disabled>Borrow</button>
                 }
                 else
                 {
-                    <a class="btn btn-primary" asp-action="Borrow" asp-route-id="@item.id">Borrow</a>
+                    <form asp-action="Borrow" method="post">
+                        <input type="hidden" name="id" value="@item.id"/>
+                        <input type="hidden" name="ConcurrencyToken" value="@item.ConcurrencyToken"/>
+                        <button type="submit" class="btn btn-primary">Borrow</button>
+                    </form>
                 }
             </td>
         </tr>
