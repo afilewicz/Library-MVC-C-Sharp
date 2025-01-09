@@ -18,5 +18,17 @@ namespace Library.Data
 
         public DbSet<Library.Models.Book> Book { get; set; } = default!;
         public DbSet<Library.Models.Loan> Loan { get; set; } = default!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            
+            modelBuilder.Entity<Book>()
+                .Property(b => b.ConcurrencyToken)
+                .IsConcurrencyToken();
+            
+            modelBuilder.Entity<IdentityUserLogin<string>>()
+                .HasKey(login => new { login.LoginProvider, login.ProviderKey });
+        }
     }
 }

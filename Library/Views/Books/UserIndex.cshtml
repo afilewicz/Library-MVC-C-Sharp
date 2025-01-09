@@ -1,7 +1,9 @@
+@using Microsoft.IdentityModel.Tokens
+@using Library.Utils
 @model Library.Models.BookPublisherViewModel
 
 @{
-    ViewData["Title"] = "User Index";
+    ViewData["Title"] = "Books";
 }
 
 @if (TempData["ConcurrencyError"] != null)
@@ -56,7 +58,9 @@
         <th>@Html.DisplayNameFor(model => model.Books![0].publisher)</th>
         <th>@Html.DisplayNameFor(model => model.Books![0].date_of_publication)</th>
         <th>@Html.DisplayNameFor(model => model.Books![0].price)</th>
-        <th></th>
+        <th>
+            Token
+        </th>
     </tr>
     </thead>
     <tbody>
@@ -68,6 +72,9 @@
             <td>@Html.DisplayFor(modelItem => item.publisher)</td>
             <td>@Html.DisplayFor(modelItem => item.date_of_publication)</td>
             <td>@Html.DisplayFor(modelItem => item.price)</td>
+            <td>
+                @Library.Utils.Utility.GetLastChars(item.ConcurrencyToken)
+            </td>
             <td>
                 @if (Convert.ToInt32(TempData["BorrowFailed"]) != item.id && item.is_loaned)
                 {

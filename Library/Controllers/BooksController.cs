@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace Library.Controllers
 {
@@ -110,17 +111,18 @@ namespace Library.Controllers
             }
 
             var book = await _context.Book.FindAsync(id);
-            // if (book == null || book.is_loaned)
+            
+            // if (book.ConcurrencyToken != concurrencyToken)
             // {
-            //     return NotFound();
+            //     TempData["ConcurrencyError"] = "Ktoś wypożyczył już tę książkę.";
+            //     TempData["BorrowFailed"] = book.id;
+            //     return RedirectToAction(nameof(Index));
             // }
             
-            if (book.ConcurrencyToken != concurrencyToken)
-            {
-                TempData["ConcurrencyError"] = "Ktoś wypożyczył już tę książkę.";
-                TempData["BorrowFailed"] = book.id;
-                return RedirectToAction(nameof(Index));
-            }
+            book.ConcurrencyToken = Guid.NewGuid();
+            _context.Entry(book).Property(b => b.ConcurrencyToken)
+                .OriginalValue = concurrencyToken;
+
 
             Guid userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
             
@@ -129,7 +131,6 @@ namespace Library.Controllers
                 BookId = book.id,
                 UserId = userId,
                 LoanDate = null,
-                // ReturnDate = DateTime.Now.AddSeconds(4),
                 ReturnDate = DateTime.Today.AddDays(1).AddSeconds(-1),
                 Status = LoanStatus.Reserved
             };
@@ -141,7 +142,7 @@ namespace Library.Controllers
 
             // Update the book's loan status
             book.is_loaned = true;
-            book.ConcurrencyToken = Guid.NewGuid();
+            // book.ConcurrencyToken = Guid.NewGuid();
             _context.Book.Update(book);
             await _context.SaveChangesAsync();
             TempData["BorrowFailed"] = false;

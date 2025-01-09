@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LibraryContext>(options =>
@@ -28,6 +29,7 @@ using (var scope = app.Services.CreateScope())
     SeedData.Initialize(services);
     IdentityInitializer.SeedData(services).Wait();
 }
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
