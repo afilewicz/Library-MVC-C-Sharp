@@ -30,5 +30,31 @@ namespace Library.Data
             modelBuilder.Entity<IdentityUserLogin<string>>()
                 .HasKey(login => new { login.LoginProvider, login.ProviderKey });
         }
+        
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var modifiedEntries = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified && e.Entity is Book);
+
+            foreach (var entry in modifiedEntries)
+            {
+                ((Book)entry.Entity).ConcurrencyToken = Guid.NewGuid();
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        public override int SaveChanges()
+        {
+            var modifiedEntries = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified && e.Entity is Book);
+
+            foreach (var entry in modifiedEntries)
+            {
+                ((Book)entry.Entity).ConcurrencyToken = Guid.NewGuid();
+            }
+
+            return base.SaveChanges();
+        }
     }
 }

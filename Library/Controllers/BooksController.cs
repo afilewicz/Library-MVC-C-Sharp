@@ -9,6 +9,7 @@ using Library.Data;
 using Library.Models;
 using Microsoft.AspNetCore.Authorization;
 using System;
+using Humanizer;
 
 namespace Library.Controllers
 {
@@ -109,8 +110,8 @@ namespace Library.Controllers
             {
                 return NotFound();
             }
-
-            var book = await _context.Book.FindAsync(id);
+            
+            var book= await _context.Book.FirstOrDefaultAsync(b => b.id == id);
             
             // if (book.ConcurrencyToken != concurrencyToken)
             // {
@@ -118,14 +119,15 @@ namespace Library.Controllers
             //     TempData["BorrowFailed"] = book.id;
             //     return RedirectToAction(nameof(Index));
             // }
+            if (book == null)
+            {
+                ModelState.AddModelError(string.Empty,
+                    "Unable to save changes. The book was deleted by another user.");
+                return RedirectToAction(nameof(Index));
+            }
             
-            book.ConcurrencyToken = Guid.NewGuid();
-            _context.Entry(book).Property(b => b.ConcurrencyToken)
-                .OriginalValue = concurrencyToken;
-
-
             Guid userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value);
-            
+
             var loan = new Loan
             {
                 BookId = book.id,
@@ -134,19 +136,67 @@ namespace Library.Controllers
                 ReturnDate = DateTime.Today.AddDays(1).AddSeconds(-1),
                 Status = LoanStatus.Reserved
             };
-            
-            await _context.SaveChangesAsync();
 
             _context.Loan.Add(loan);
-            await _context.SaveChangesAsync();
-
-            // Update the book's loan status
+                    
             book.is_loaned = true;
+
             // book.ConcurrencyToken = Guid.NewGuid();
-            _context.Book.Update(book);
-            await _context.SaveChangesAsync();
-            TempData["BorrowFailed"] = false;
-            return RedirectToAction(nameof(UserIndex));
+            _context.Entry(book).Property(b => b.ConcurrencyToken)
+                .OriginalValue = concurrencyToken;
+            
+            if (await TryUpdateModelAsync<Book>(book, "", b=> b.is_loaned))
+            {
+                try
+                {
+                    // book.ConcurrencyToken = Guid.NewGuid();
+                    _context.Book.Update(book);
+                    await _context.SaveChangesAsync();
+                    TempData["BorrowFailed"] = false;
+                    return RedirectToAction(nameof(UserIndex));
+                }
+                catch (DbUpdateConcurrencyException ex)
+                {
+                    // Obsługa konfliktu współbieżności
+                    var exceptionEntry = ex.Entries.Single();
+                    var clientValues = (Book)exceptionEntry.Entity;
+                    var databaseEntry = exceptionEntry.GetDatabaseValues();
+
+                    if (databaseEntry == null)
+                    {
+                        // Książka została usunięta w międzyczasie
+                        ModelState.AddModelError(string.Empty,
+                            "Unable to borrow the book. It was deleted by another user.");
+                    }
+                    else
+                    {
+                        var databaseValues = (Book)databaseEntry.ToObject();
+
+                        // Porównanie pól i dodanie komunikatów błędów
+                        if (databaseValues.is_loaned != clientValues.is_loaned)
+                        {
+                            ModelState.AddModelError("is_loaned",
+                                $"Current value in the database: {databaseValues.is_loaned}");
+                        }
+
+                        ModelState.AddModelError(string.Empty,
+                            "The record you attempted to borrow was modified by another user after you got the original value. "
+                            + "The borrow operation was canceled. Current values in the database have been displayed. "
+                            + "If you still want to borrow this book, try again.");
+
+                        // Aktualizacja tokena w modelu klienta
+                        book.ConcurrencyToken = databaseValues.ConcurrencyToken;
+                        TempData["BorrowFailed"] = true;
+                        TempData["ConcurrencyError"] = true;
+                    }
+
+                    // Powrót do widoku z komunikatem o błędzie
+
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
         
         public async Task<IActionResult> ReleaseReservedBooks()

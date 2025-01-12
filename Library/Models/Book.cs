@@ -20,5 +20,6 @@ public class Book
     [ForeignKey("Loan")]
     public int? history_of_leases { get; set; }
     public bool is_loaned { get; set; } = false;
+    
     public Guid ConcurrencyToken { get; set; } = Guid.NewGuid();
 }
